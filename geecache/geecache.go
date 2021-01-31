@@ -63,3 +63,22 @@ func (g *Group) Get(key string) (ByteView, error) {
 
 	return g.load(key)
 }
+
+func (g *Group) load(key string) (ByteView, error) {
+	return g.loadLocally(key)
+}
+
+func (g *Group) loadLocally(key string) (ByteView, error) {
+	b, err := g.getter.Get(key)
+	if err !=nil {
+		return ByteView{}, err
+	}
+
+	res := ByteView{cloneBytes(b)}
+	g.populateCache(key, res)
+	return res, nil
+}
+
+func (g *Group) populateCache(key string, value ByteView) {
+	g.mainCache.add(key, value)
+}
