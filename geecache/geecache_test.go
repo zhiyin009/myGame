@@ -38,7 +38,7 @@ func TestGet(t *testing.T) {
 			}
 			return nil, fmt.Errorf("%s not exist", key)
 		}))
-	gee:= GetGroup("scores")
+	gee := GetGroup("scores")
 
 	for k, v := range db {
 		if view, err := gee.Get(k); err != nil || view.String() != v {
@@ -51,9 +51,5 @@ func TestGet(t *testing.T) {
 
 	if view, err := gee.Get("unknown"); err == nil {
 		t.Fatalf("the value of unknow should be empty, but %s got", view)
-	}
-
-	for i:=0;i<1000000000;i++ {
-		_ = db["Tom"]
 	}
 }

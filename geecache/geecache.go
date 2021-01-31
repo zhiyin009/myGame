@@ -56,9 +56,9 @@ func (g *Group) Get(key string) (ByteView, error) {
 		return ByteView{}, fmt.Errorf("key is requried")
 	}
 
-	if bv, ok:=g.mainCache.get(key);ok{
+	if bv, ok := g.mainCache.get(key); ok {
 		log.Println("[GeeCache] hit")
-		return bv,nil
+		return bv, nil
 	}
 
 	return g.load(key)
@@ -70,7 +70,7 @@ func (g *Group) load(key string) (ByteView, error) {
 
 func (g *Group) loadLocally(key string) (ByteView, error) {
 	b, err := g.getter.Get(key)
-	if err !=nil {
+	if err != nil {
 		return ByteView{}, err
 	}
 
