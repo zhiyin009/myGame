@@ -1,8 +1,8 @@
 package main
 
 import (
+	"example/geecache"
 	"fmt"
-	"geecache"
 
 	"log"
 	"net/http"
