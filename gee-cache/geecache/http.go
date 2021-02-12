@@ -15,7 +15,7 @@ type HTTPPool struct {
 
 func (p *HTTPPool) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if !strings.HasPrefix(r.URL.Path, p.basePath) {
-		http.Error(w, "HTTPPool serving unexpected path: " + r.URL.Path, http.StatusBadRequest)
+		http.Error(w, "HTTPPool serving unexpected path: "+r.URL.Path, http.StatusBadRequest)
 		return
 	}
 	log.Println(r.Method, r.URL.Path)
@@ -25,9 +25,9 @@ func (p *HTTPPool) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	g := GetGroup(parts[0]);
+	g := GetGroup(parts[0])
 	if g == nil {
-		http.Error(w, "Invalid group " + parts[0], http.StatusBadRequest)
+		http.Error(w, "Invalid group "+parts[0], http.StatusBadRequest)
 		return
 	}
 

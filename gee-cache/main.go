@@ -19,10 +19,10 @@ func main() {
 		func(key string) ([]byte, error) {
 			log.Println("[SlowDB] search key", "key")
 			if score, ok := db[key]; ok {
-			return []byte(score), nil
-		}
-		return nil, fmt.Errorf("%s not exist", key)
-	}))
+				return []byte(score), nil
+			}
+			return nil, fmt.Errorf("%s not exist", key)
+		}))
 
 	addr := "127.0.0.1:8080"
 	peers := geecache.NewHTTPPool(addr)

@@ -2,9 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1fd3c63b-c6a2-4106-83f0-f9a2a40000ee" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/geecache/http.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/geecache/consistenthash/consistenthash.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/geecache/consistenthash/consistenthash_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/geecache/cache.go" beforeDir="false" afterPath="$PROJECT_DIR$/geecache/cache.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/geecache/http.go" beforeDir="false" afterPath="$PROJECT_DIR$/geecache/http.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -12,12 +14,16 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="GOROOT" url="file://$PROJECT_DIR$/../../../../../../../Go" />
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
+  <component name="GOROOT" url="file://$PROJECT_DIR$/../../../../../../Go" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
-  </component>
-  <component name="GoLibraries">
-    <option name="indexEntireGoPath" value="false" />
   </component>
   <component name="ProjectId" id="1oCfQx07aImqIGMmpZlua4nk2oB" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -26,16 +32,25 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="DefaultGoTemplateProperty" value="Go File" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="configurable..is.expanded" value="true" />
+    <property name="configurable.GoLibrariesConfigurable.is.expanded" value="true" />
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
     <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
-    <property name="last_opened_file_path" value="$USER_HOME$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
+    <property name="settings.editor.selected.configurable" value="go.vgo" />
   </component>
-  <component name="RunManager">
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\admin\Desktop\Go\myGame\gee-cache\geecache\consistenthash" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Go Test.TestHashing in example/geecache/consistenthash">
     <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="gee-cache" />
       <working_directory value="$PROJECT_DIR$" />
@@ -44,8 +59,20 @@
       <directory value="$PROJECT_DIR$" />
       <method v="2" />
     </configuration>
+    <configuration name="TestHashing in example/geecache/consistenthash" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="gee-cache" />
+      <working_directory value="$PROJECT_DIR$/geecache/consistenthash" />
+      <framework value="gotest" />
+      <kind value="PACKAGE" />
+      <package value="example/geecache/consistenthash" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <pattern value="^\QTestHashing\E$" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Test.TestHashing in example/geecache/consistenthash" />
         <item itemvalue="Go Build.go build main.go" />
       </list>
     </recent_temporary>
