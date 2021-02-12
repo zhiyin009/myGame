@@ -2,12 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1fd3c63b-c6a2-4106-83f0-f9a2a40000ee" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/geecache/consistenthash/consistenthash.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/geecache/consistenthash/consistenthash_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/geecache/peers.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/geecache/cache.go" beforeDir="false" afterPath="$PROJECT_DIR$/geecache/cache.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/geecache/consistenthash/consistenthash_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/geecache/consistenthash/consistenthash_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/geecache/geecache.go" beforeDir="false" afterPath="$PROJECT_DIR$/geecache/geecache.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/geecache/http.go" beforeDir="false" afterPath="$PROJECT_DIR$/geecache/http.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
