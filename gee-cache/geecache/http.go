@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"path"
 	"strings"
 	"sync"
 )
@@ -91,14 +92,14 @@ type httpGetter struct {
 	baseUrl string
 }
 
-func (g *httpGetter) Get(group string, key string) ([]byte, error) {
-	u := fmt.Sprintf(
-		"%v%v%v",
-		g.baseUrl,
-		url.QueryEscape(group),
-		url.QueryEscape(key))
+func (h *httpGetter) Get(group string, key string) ([]byte, error) {
+	u, err := url.ParseRequestURI(h.baseUrl)
+	if err != nil {
+		panic(err)
+	}
 
-	res, err := http.Get(u)
+	u.Path = path.Join(u.Path, group, key)
+	res, err := http.Get(u.String())
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +108,7 @@ func (g *httpGetter) Get(group string, key string) ([]byte, error) {
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("server returned: %v", res.StatusCode)
 	}
+	fmt.Printf("[Remote Server %s] Got %s/%s Success\n", h.baseUrl, group, key)
 
 	bytes, err := ioutil.ReadAll(res.Body)
 	if err != nil {
