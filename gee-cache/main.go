@@ -10,13 +10,13 @@ import (
 )
 
 var db = map[string]string{
-	"Tom":  "630",
-	"Jack": "589",
-	"Sam":  "567",
+	"Tom":    "630",
+	"Jack":   "589",
+	"Sam":    "567",
 	"Xiaozy": "620",
 }
 
-const BasePath="/api/"
+const BasePath = "/api/"
 
 func createGroup() *geecache.Group {
 	return geecache.NewGroup("score", 8*1024*1024, geecache.GetterFunc(

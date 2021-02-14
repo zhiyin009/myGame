@@ -1,9 +1,11 @@
 package geecache
 
 import (
+	"example/geecache/slightflight"
 	"fmt"
 	"log"
 	"sync"
+	"time"
 )
 
 type Getter interface {
@@ -21,6 +23,7 @@ type Group struct {
 	getter    Getter
 	mainCache cache
 	peers     PeerPicker
+	loader    *slightflight.Group
 }
 
 var (
@@ -39,6 +42,7 @@ func NewGroup(name string, cacheBytes int64, getter Getter) *Group {
 		name:      name,
 		getter:    getter,
 		mainCache: cache{cacheBytes: cacheBytes},
+		loader:    &slightflight.Group{},
 	}
 
 	groups[name] = g
@@ -53,6 +57,7 @@ func GetGroup(name string) *Group {
 }
 
 func (g *Group) Get(key string) (ByteView, error) {
+	time.Sleep(1*time.Second)
 	if key == "" {
 		return ByteView{}, fmt.Errorf("key is requried")
 	}
@@ -72,17 +77,24 @@ func (g *Group) RegisterPeers(peers PeerPicker) {
 	g.peers = peers
 }
 
-func (g *Group) load(key string) (bv ByteView, err error) {
-	if g.peers != nil {
-		if peer, ok := g.peers.PickPeer(key); ok {
-			if bv, err = g.getFromPeer(peer, key); err == nil {
-				return bv, nil
+func (g *Group) load(key string) (view ByteView, err error) {
+	viewi, err := g.loader.Do(key, func() (interface{}, error) {
+		if g.peers != nil {
+			if peer, ok := g.peers.PickPeer(key); ok {
+				if view, err = g.getFromPeer(peer, key); err == nil {
+					return view, nil
+				}
+				log.Println("[GeeCache] Failed to get from peer", err)
 			}
-			log.Println("[GeeCache] Failed to get from peer", err)
 		}
-	}
 
-	return g.loadLocally(key)
+		return g.getLocally(key)
+	})
+
+	if err == nil {
+		return viewi.(ByteView), nil
+	}
+	return
 }
 
 func (g *Group) getFromPeer(peer PeerGetter, key string) (ByteView, error) {
@@ -93,7 +105,7 @@ func (g *Group) getFromPeer(peer PeerGetter, key string) (ByteView, error) {
 	return ByteView{b: bytes}, nil
 }
 
-func (g *Group) loadLocally(key string) (ByteView, error) {
+func (g *Group) getLocally(key string) (ByteView, error) {
 	b, err := g.getter.Get(key)
 	if err != nil {
 		return ByteView{}, err
