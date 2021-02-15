@@ -2,6 +2,7 @@ package geecache
 
 import (
 	"example/geecache/consistenthash"
+	pb "example/geecache/geecachepb"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -10,6 +11,8 @@ import (
 	"path"
 	"strings"
 	"sync"
+
+	"github.com/golang/protobuf/proto"
 )
 
 const defaultBasePath = "/api/"
@@ -41,14 +44,19 @@ func (p *HTTPPool) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	v, err := g.Get(parts[1])
+	view, err := g.Get(parts[1])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	//w.Header().Set("Content-Type", "application/octet-stream")
-	w.Write(v.b)
+	body, err := proto.Marshal(&pb.Response{Value: view.ByteSlice()})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Write(body)
 }
 
 func (p *HTTPPool) Set(peers ...string) {
@@ -92,30 +100,34 @@ type httpGetter struct {
 	baseUrl string
 }
 
-func (h *httpGetter) Get(group string, key string) ([]byte, error) {
+func (h *httpGetter) Get(in *pb.Request, out *pb.Response) (error) {
 	u, err := url.ParseRequestURI(h.baseUrl)
 	if err != nil {
 		panic(err)
 	}
 
-	u.Path = path.Join(u.Path, group, key)
+	u.Path = path.Join(u.Path, in.Group, in.Key)
 	res, err := http.Get(u.String())
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("server returned: %v", res.StatusCode)
+		return fmt.Errorf("server returned: %v", res.StatusCode)
 	}
-	fmt.Printf("[Remote Server %s] Got %s/%s Success\n", h.baseUrl, group, key)
+	fmt.Printf("[Remote Server %s] Got %s/%s Success\n", h.baseUrl, in.Group, in.Key)
 
 	bytes, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, fmt.Errorf("reading response body: %v", err)
+		return fmt.Errorf("reading response body: %v", err)
 	}
 
-	return bytes, nil
+	if err = proto.Unmarshal(bytes, out); err != nil {
+		return fmt.Errorf("decoding response body: %v", err)
+	}
+
+	return nil
 }
 
 var _ PeerGetter = (*httpGetter)(nil)

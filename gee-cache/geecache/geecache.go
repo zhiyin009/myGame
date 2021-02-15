@@ -1,11 +1,11 @@
 package geecache
 
 import (
+	pb "example/geecache/geecachepb"
 	"example/geecache/slightflight"
 	"fmt"
 	"log"
 	"sync"
-	"time"
 )
 
 type Getter interface {
@@ -57,7 +57,6 @@ func GetGroup(name string) *Group {
 }
 
 func (g *Group) Get(key string) (ByteView, error) {
-	time.Sleep(1*time.Second)
 	if key == "" {
 		return ByteView{}, fmt.Errorf("key is requried")
 	}
@@ -98,11 +97,16 @@ func (g *Group) load(key string) (view ByteView, err error) {
 }
 
 func (g *Group) getFromPeer(peer PeerGetter, key string) (ByteView, error) {
-	bytes, err := peer.Get(g.name, key)
+	req := &pb.Request{
+		Group: g.name,
+		Key: key,
+	}
+	res := &pb.Response{}
+	err := peer.Get(req, res)
 	if err != nil {
 		return ByteView{}, err
 	}
-	return ByteView{b: bytes}, nil
+	return ByteView{b: res.Value}, nil
 }
 
 func (g *Group) getLocally(key string) (ByteView, error) {
