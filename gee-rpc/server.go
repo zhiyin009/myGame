@@ -18,7 +18,7 @@ type Option struct {
 	CodecType   codec.Type // client may choose different Codec to encode body
 }
 
-var DefaultOption = Option{
+var DefaultOption = &Option{
 	MagicNumber: MagicNumber,
 	CodecType:   codec.GobType,
 }
@@ -135,6 +135,7 @@ func (s *Server) sendResponse(cc codec.Codec, header *codec.Header, body interfa
 
 func (s *Server) handleRequest(cc codec.Codec, req *request, sending *sync.Mutex, wg *sync.WaitGroup) {
 	defer wg.Done()
+	log.Println(req.h, req.argv.Elem())
 	req.replyv = reflect.ValueOf(fmt.Sprintf("geerpc resp %d", req.h.Seq))
 	s.sendResponse(cc, req.h, req.replyv.Interface(), sending)
 }
