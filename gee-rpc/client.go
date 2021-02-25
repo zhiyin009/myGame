@@ -173,7 +173,7 @@ func (client *Client) Go(serviceMethod string, args, reply interface{}, done cha
 // Call invokes the named function, waits for it to complete,
 // and returns its error status.
 func (client *Client) Call(serviceMethod string, args, reply interface{}) error {
-	c := <- client.Go(serviceMethod, args, reply, nil).Done
+	c := <-client.Go(serviceMethod, args, reply, nil).Done
 	return c.Error
 }
 

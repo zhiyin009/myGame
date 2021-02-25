@@ -55,7 +55,7 @@ func main() {
 	client, _ := geerpc.Dial("tcp", <-addr)
 	defer func() { _ = client.Close() }()
 
-	time.Sleep(1*time.Second)
+	time.Sleep(1 * time.Second)
 	// send request & receive response
 	var wg sync.WaitGroup
 	for i := 0; i < 5; i++ {
