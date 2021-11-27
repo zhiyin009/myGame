@@ -1,0 +1,7 @@
+{
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true,
+    "editor.codeActionsOnSave": { "source.organizeImports": true },
+    "python.languageServer": "Pylance",
+    "python.analysis.typeCheckingMode":"strict",
+}
