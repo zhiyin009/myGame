@@ -9,9 +9,10 @@
 import asyncio as aio
 import logging
 import time
-from typing import Optional, Tuple
+from typing import Callable, Optional, Tuple
 
 import httpx
+from prometheus_client import start_http_server
 
 from order import Order, OrderAioClient
 from order.aclient import OrderAioClient
@@ -42,21 +43,25 @@ async def order_callback(res: Optional[httpx.Response], err: Optional[Tuple[Base
 
 
 async def main():
+    # http server for prometheus client
+    start_http_server(8000)
+
+    # http client for ordering
     client = OrderAioClient(
         base_url='https://dev/', verify=False, http2=True)
 
     start_ns = time.time_ns()
     if client.is_connected:
         futures = [client.order(recv_from_strategies(), order_callback)
-                   for i in range(1000)]
+                   for i in range(100000)]
 
         # wait for all task pushed into client.worker
         for fu in futures:
             await fu
 
         # wait for all task in worker being finished
-        await client.join()
-        await client.close()
+
+    await client.close()
 
     print(f'elapsed: {(time.time_ns() - start_ns) / 1000**2} ms')
     print(f'success: {success}')
