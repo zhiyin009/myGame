@@ -13,7 +13,8 @@ from typing import Optional, Tuple
 
 import httpx
 
-from order import Order, OrderClient
+from order import Order, OrderAioClient
+from order.aclient import OrderAioClient
 
 oid = 0
 
@@ -41,7 +42,7 @@ async def order_callback(res: Optional[httpx.Response], err: Optional[Tuple[Base
 
 
 async def main():
-    client = OrderClient(
+    client = OrderAioClient(
         base_url='https://dev/', verify=False, http2=True)
 
     start_ns = time.time_ns()

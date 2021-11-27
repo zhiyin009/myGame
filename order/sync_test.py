@@ -9,12 +9,11 @@
 import logging
 import time
 import traceback
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple
 
 import httpx
-from asyncio_pool import AioPool
 
-from order import Order, OrderClient, construct_request_header_and_body
+from order import Order, construct_request_header_and_body
 
 oid = 0
 

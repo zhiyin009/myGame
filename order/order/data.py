@@ -7,6 +7,9 @@
 '''
 
 
+from typing import Any
+
+
 class Order():
     def __init__(self, oid: int, trade: str, obj: str):
         self.oid = oid
@@ -14,5 +17,5 @@ class Order():
         self.obj = obj
 
 
-def construct_request_header_and_body(order: Order) -> dict:
+def construct_request_header_and_body(order: Order) -> dict[str, Any]:
     return order.__dict__
