@@ -7,6 +7,7 @@
 '''
 
 import asyncio as aio
+import time
 from typing import Any, Awaitable, Callable, Coroutine, List, Optional, Tuple
 
 import httpx
@@ -65,7 +66,8 @@ class OrderAioClient():
     async def order(self, orders: List[Order],
                     cb: Callable[[httpx.Response, Tuple[BaseException, str], Tuple[object]], Coroutine[Any, Any, None]]) -> Awaitable[List[httpx.Response]]:
 
-        @self.metrics.order_histogram.time()
+        start_t = time.time()
+
         async def wrap(order: Order) -> Optional[Coroutine[Any, Any, httpx.Response]]:
             try_reconnect = False
             for i in range(1, self.retry+1):
@@ -91,12 +93,13 @@ class OrderAioClient():
                     if i == self.retry:
                         raise
                 finally:
-                    if err:
-                        self.metrics.fail()
-                    else:
-                        self.metrics.success()
+                    pass
+                    # if err:
+                    #     self.metrics.fail()
+                    # else:
+                    #     self.metrics.success()
 
-        return [await self._worker.spawn_n(wrap(order), cb=cb, ctx=(self, order)) for order in orders]
+        return [await self._worker.spawn_n(wrap(order), cb=cb, ctx=(self, order, start_t)) for order in orders]
 
     async def join(self) -> None:
         await self._worker.join()

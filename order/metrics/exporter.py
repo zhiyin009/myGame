@@ -7,24 +7,21 @@
 '''
 
 
+import httpx
 from prometheus_client import Counter, Histogram
 
 
 class OrderMetrics():
     def __init__(self):
-        self.order_counter_succ = Counter(
-            'strategy_order_succ', 'HTTP Success', ['method', 'endpoint'])
-        self.order_counter_fail = Counter(
-            'strategy_order_fail', 'HTTP Failures', ['method', 'endpoint'])
-        self.order_counter_total = Counter(
-            'strategy_order_total', 'HTTP Total', ['method', 'endpoint'])
-        self.order_histogram = Histogram(
-            'strategy_order_latency_second', 'Description of histogram'
+
+        self.order_request_total = Counter(
+            'order_request_total', 'HTTP Total', ['method', 'endpoint', 'code'])
+        self.order_latency_second = Histogram(
+            'order_latency_second', 'Description of histogram'
         )
 
-    def success(self):
-        self.order_counter_total.labels('post', '/api/order').inc()
-        self.order_counter_succ.labels('post', '/api/order').inc()
+    def response(self, res: httpx.Response, interval: float):
+        self.order_request_total.labels(
+            res.request.method, res.request.url, res.status_code).inc()
 
-    def fail(self):
-        self.order_counter_fail.labels('post', '/api/order').inc()
+        self.order_latency_second.observe(interval)

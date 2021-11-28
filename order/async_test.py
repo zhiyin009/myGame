@@ -7,15 +7,13 @@
 '''
 
 import asyncio as aio
-import logging
 import time
-from typing import Callable, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import httpx
 from prometheus_client import start_http_server
 
 from order import Order, OrderAioClient
-from order.aclient import OrderAioClient
 
 oid = 0
 
@@ -29,17 +27,19 @@ def recv_from_strategies() -> List[Order]:
 success = 0
 
 
-async def order_callback(res: Optional[httpx.Response], err: Optional[Tuple[BaseException, str]], ctx: Tuple[object]) -> None:
+async def order_callback(res: Optional[httpx.Response], err: Optional[Tuple[BaseException, str]], ctx: Tuple[OrderAioClient, Order, float]) -> None:
     if err:
         exc, tb = err
         print(tb)
         print(exc)
         return
 
-    if res and res.is_success:
+    if res:
+        client, order, start_t = ctx
+        client.metrics.response(res, time.time()-start_t)
+
         global success
         success += 1
-        # print(success)
 
 
 async def main():

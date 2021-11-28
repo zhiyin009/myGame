@@ -44,7 +44,7 @@ def main():
         base_url='https://dev/', verify=False, http2=True)
 
     start_ns = time.time_ns()
-    i = 1000
+    i = 100000
     while i > 0:
         resp = None
         err = None
