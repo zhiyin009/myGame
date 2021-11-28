@@ -7,7 +7,7 @@
 '''
 
 
-from typing import Any
+from typing import Any, Dict
 
 
 class Order():
@@ -17,5 +17,5 @@ class Order():
         self.obj = obj
 
 
-def construct_request_header_and_body(order: Order) -> dict[str, Any]:
+def construct_request_header_and_body(order: Order) -> Dict[str, Any]:
     return order.__dict__

@@ -9,7 +9,7 @@
 import asyncio as aio
 import logging
 import time
-from typing import Callable, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 
 import httpx
 from prometheus_client import start_http_server
@@ -20,7 +20,7 @@ from order.aclient import OrderAioClient
 oid = 0
 
 
-def recv_from_strategies() -> list[Order]:
+def recv_from_strategies() -> List[Order]:
     global oid
     oid += 1
     return [Order(oid, 'buy', 'apple-2112')]
@@ -36,7 +36,7 @@ async def order_callback(res: Optional[httpx.Response], err: Optional[Tuple[Base
         print(exc)
         return
 
-    if res.is_success:
+    if res and res.is_success:
         global success
         success += 1
         # print(success)
@@ -53,7 +53,7 @@ async def main():
     start_ns = time.time_ns()
     if client.is_connected:
         futures = [client.order(recv_from_strategies(), order_callback)
-                   for i in range(100000)]
+                   for _ in range(100000)]
 
         # wait for all task pushed into client.worker
         for fu in futures:

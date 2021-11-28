@@ -9,7 +9,7 @@
 import logging
 import time
 import traceback
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 import httpx
 
@@ -18,7 +18,7 @@ from order import Order, construct_request_header_and_body
 oid = 0
 
 
-def recv_from_strategies() -> list[Order]:
+def recv_from_strategies() -> List[Order]:
     global oid
     oid += 1
     return [Order(oid, 'buy', 'apple-2112')]
@@ -29,11 +29,11 @@ success = 0
 
 def order_callback(res: Optional[httpx.Response], err: Optional[Tuple[BaseException, str]], ctx: httpx.Client) -> None:
     if err:
-        exc, tb = err
+        exc, _ = err
         print(exc)
         return
 
-    if res.is_success:
+    if res and res.is_success:
         global success
         success += 1
         # print(success)

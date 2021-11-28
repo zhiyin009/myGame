@@ -7,7 +7,7 @@
 '''
 
 import asyncio as aio
-from typing import Any, Awaitable, Callable, Coroutine, Optional, Tuple
+from typing import Any, Awaitable, Callable, Coroutine, List, Optional, Tuple
 
 import httpx
 from asyncio_pool import AioPool
@@ -62,9 +62,9 @@ class OrderAioClient():
                 async with self._conn_cond:
                     await self._conn_cond.wait()
 
-    async def order(self, orders: list[Order],
-                    cb: Callable[[httpx.Response, Tuple[BaseException, str], Tuple[object]], Coroutine[Any, Any, None]]) -> Awaitable[list[httpx.Response]]:
-                    
+    async def order(self, orders: List[Order],
+                    cb: Callable[[httpx.Response, Tuple[BaseException, str], Tuple[object]], Coroutine[Any, Any, None]]) -> Awaitable[List[httpx.Response]]:
+
         @self.metrics.order_histogram.time()
         async def wrap(order: Order) -> Optional[Coroutine[Any, Any, httpx.Response]]:
             try_reconnect = False
