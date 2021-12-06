@@ -7,7 +7,9 @@
 '''
 
 
-from typing import Any, Dict
+from typing import List
+
+oid = 0
 
 
 class Order():
@@ -17,5 +19,11 @@ class Order():
         self.obj = obj
 
 
-def construct_request_header_and_body(order: Order) -> Dict[str, Any]:
-    return order.__dict__
+def recv_from_strategies(num: int = 1) -> List[Order]:
+    global oid
+    res: List[Order] = []
+    for _ in range(num):
+        oid += 1
+        res.append(Order(oid, 'buy', 'apple-2112'))
+
+    return res

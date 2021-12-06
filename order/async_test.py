@@ -6,28 +6,21 @@
 @Author  :   xiaozy
 '''
 
+import ast
 import asyncio as aio
 import time
-from typing import List, Optional, Tuple
+from asyncio import futures
+from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
 from prometheus_client import start_http_server
 
-from order import Order, OrderAioClient
-
-oid = 0
-
-
-def recv_from_strategies() -> List[Order]:
-    global oid
-    oid += 1
-    return [Order(oid, 'buy', 'apple-2112')]
-
+from order import Order, OrderAioClient, recv_from_strategies
 
 success = 0
 
 
-async def order_callback(res: Optional[httpx.Response], err: Optional[Tuple[BaseException, str]], ctx: Tuple[OrderAioClient, Order, float]) -> None:
+async def order_callback(res: Tuple[httpx.Response, float], err: Optional[Tuple[BaseException, str]], ctx: Tuple[OrderAioClient, bytes, float]) -> None:
     if err:
         exc, tb = err
         print(tb)
@@ -35,8 +28,12 @@ async def order_callback(res: Optional[httpx.Response], err: Optional[Tuple[Base
         return
 
     if res:
-        client, order, start_t = ctx
-        client.metrics.response(res, time.time()-start_t)
+        response, start_ns = res
+        client, order_b, worker_spawn_ns = ctx
+        order = ast.literal_eval(order_b.decode('utf-8'))
+        print(
+            f'response_latency {order["oid"]}: {(time.time_ns()-start_ns)/1000**2} ms')
+        client.metrics.response(response, (time.time_ns()-start_ns)/1000**2)
 
         global success
         success += 1
@@ -48,21 +45,26 @@ async def main():
 
     # http client for ordering
     client = OrderAioClient(
-        base_url='https://dev/', verify=False, http2=True)
+        base_url='https://dev/', verify=False, http2=True, timeout=2)
 
     start_ns = time.time_ns()
-    if client.is_connected:
-        futures = [client.order(recv_from_strategies(), order_callback)
-                   for _ in range(100000)]
 
-        # wait for all task pushed into client.worker
-        for fu in futures:
-            await fu
+    requests = client.build_request(recv_from_strategies(995))
+    print(f'order_gen: {(time.time_ns()-start_ns) / 1000**2} ms')
 
-        # wait for all task in worker being finished
+    # warming up
+    fs = client.orders([requests[0]], order_callback)
+    await fs[0]
+    await client.join()
 
+    futures = client.orders(requests, order_callback)
+    print(f'spawn: {(time.time_ns() - start_ns) / 1000**2} ms')
+    # wait for all task pushed into client.worker
+    for fu in futures:
+        await fu
+
+    # wait until resquests in client.worker finshed
     await client.close()
-
     print(f'elapsed: {(time.time_ns() - start_ns) / 1000**2} ms')
     print(f'success: {success}')
 

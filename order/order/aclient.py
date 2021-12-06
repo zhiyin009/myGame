@@ -6,8 +6,12 @@
 @Author  :   xiaozy
 '''
 
+from __future__ import annotations
+
 import asyncio as aio
 import time
+import traceback
+from asyncio.futures import Future
 from typing import Any, Awaitable, Callable, Coroutine, List, Optional, Tuple
 
 import httpx
@@ -15,91 +19,79 @@ from asyncio_pool import AioPool
 from h2.exceptions import ProtocolError
 from metrics import OrderMetrics
 
-from .data import Order, construct_request_header_and_body
+from .data import Order
 
 
 class OrderAioClient():
     def __init__(self,
                  base_url: str,
                  verify: Optional[bool] = True,
-                 http2: Optional[bool] = False):
+                 http2: Optional[bool] = False,
+                 timeout: Optional[int] = 5):
         self.url = base_url
         self.api_order = 'api/order'
         self.verify = verify
         self.http2 = http2
         self.retry = 3
+        self.timeout = timeout
 
         self.metrics = OrderMetrics()
 
         self.client: Optional[httpx.AsyncClient] = None
-        self._worker = AioPool(1000)
+        self._worker = AioPool(10000)
         self._conn_cond = aio.Condition()
         self._connect()
-
-    @property
-    def is_connecting(self) -> bool:
-        return self._conn_cond.locked()
-
-    @property
-    def is_connected(self) -> bool:
-        return all((not self.is_connecting, not self.client.is_closed))
 
     def _connect(self) -> None:
         self.client = httpx.AsyncClient(
             base_url=self.url,
             verify=self.verify,
             http2=self.http2,
+            timeout=self.timeout,
         )
 
-    async def reconnect(self, force: bool = False) -> None:
-        if not self.is_connected or force:
-            if not self.is_connecting:
-                async with self._conn_cond:
-                    if not self.client.is_closed:
-                        await self.client.aclose()
-                    self._connect()
-                    self._conn_cond.notify_all()
-            else:
-                async with self._conn_cond:
-                    await self._conn_cond.wait()
+    def build_request(self, orders: List[Order]) -> List[httpx.Request]:
 
-    async def order(self, orders: List[Order],
-                    cb: Callable[[httpx.Response, Tuple[BaseException, str], Tuple[object]], Coroutine[Any, Any, None]]) -> Awaitable[List[httpx.Response]]:
+        return [self.client.build_request("post", self.api_order, json=order.__dict__) for order in orders]
 
-        start_t = time.time()
+    async def aorder(self, request: httpx.Request,
+                     cb: Callable[[httpx.Response, Tuple[BaseException, str], Tuple[OrderAioClient]], Coroutine[Any, Any, None]]) -> Future[Any]:
 
-        async def wrap(order: Order) -> Optional[Coroutine[Any, Any, httpx.Response]]:
-            try_reconnect = False
-            for i in range(1, self.retry+1):
-                err = None
-                try:
-                    if (not self.is_connected or try_reconnect) and not self.is_connecting:
-                        await self.reconnect(force=True)
-                        try_reconnect = False
-                    return await self.client.post(self.api_order, data=construct_request_header_and_body(order))
-                # ProtocolError:
-                #   Nginx close connection initiative(keepalive_requests)
-                except ProtocolError as e:
-                    err = e
-                    print(
-                        f'Failed to send order.oid: {order.oid}, with error {e}, retries: {i}')
-                    try_reconnect = True
-                    if i == self.retry:
-                        raise
-                except Exception as e:
-                    err = e
-                    print(
-                        f'Failed to send order.oid: {order.oid}, with error {e}, retries: {i}')
-                    if i == self.retry:
-                        raise
-                finally:
-                    pass
-                    # if err:
-                    #     self.metrics.fail()
-                    # else:
-                    #     self.metrics.success()
+        return await self._worker.spawn(self._wrap(request), cb=cb, ctx=(self, request.read(), time.time_ns()))
 
-        return [await self._worker.spawn_n(wrap(order), cb=cb, ctx=(self, order, start_t)) for order in orders]
+    def orders(self, requests: List[httpx.Request],
+               cb: Callable[[httpx.Response, Tuple[BaseException, str], Tuple[OrderAioClient]], Coroutine[Any, Any, None]]) -> List[Future[Any]]:
+
+        return [self._worker.spawn_n(self._wrap(request), cb=cb, ctx=(self, request.read(), time.time_ns())) for request in requests]
+
+    async def _wrap(self, request: httpx.Request) -> Optional[httpx.Response]:
+        for i in range(1, self.retry+1):
+            err = None
+            try:
+                send_ns = time.time_ns()
+                resp = await self.client.send(request)
+                return resp, send_ns
+            # ProtocolError:
+            #   Nginx close connection initiative(keepalive_requests)
+            except ProtocolError as e:
+                err = e
+                # print(
+                # f'Failed to send order.oid: {order.oid}, with error {e}, retries: {i}')
+                if i == self.retry:
+                    raise
+            except Exception as e:
+                err = e
+                # print(
+                #     f'Failed to send order.oid: {order.oid}, with error {e}, retries: {i}')
+                print(traceback.format_exc())
+                if i == self.retry:
+                    raise
+            finally:
+                pass
+                # if err:
+                #     self.metrics.fail()
+                # else:
+                #     self.metrics.success()
 
     async def join(self) -> None:
         await self._worker.join()
